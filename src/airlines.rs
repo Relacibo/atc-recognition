@@ -5,7 +5,7 @@ use serde::{
     de::{self, Expected, Unexpected},
 };
 
-use crate::WhisperAtcError;
+use crate::errors::WhisperAtcError;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AirlineEntry {
