@@ -1,9 +1,8 @@
-use std::sync::{Arc, Mutex};
+use std::{sync::{Arc, Mutex}, thread};
 
 use cpal::traits::{DeviceTrait, HostTrait};
 use ringbuf::{
-    HeapRb,
-    traits::{Producer, Split},
+    traits::{Consumer, Producer, Split}, HeapRb
 };
 use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
@@ -98,6 +97,16 @@ fn main() -> Result<(), crate::errors::Error> {
     };
     let _input_stream = input_device.build_input_stream(&config, input_data_fn, err_fn, None)?;
 
+
+    thread::spawn(|| {
+        consumer.peek_slice(elems)
+    });
+    input_stream.play()?;
+    println!("Playing for 3 seconds... ");
+    std::thread::sleep(std::time::Duration::from_secs(3));
+    drop(input_stream);
+
+    println!("Done!");
     // let ctx = WhisperContext::new_with_params(MODEL_PATH, WhisperContextParameters::default())
     //     .expect("failed to open model");
     // let mut state = ctx.create_state().expect("failed to create key");
