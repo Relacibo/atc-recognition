@@ -1,4 +1,4 @@
-use crate::errors::WhisperAtcError;
+use crate::errors::Error;
 use std::ops::Deref;
 
 #[derive(Debug, Clone, Copy)]
@@ -30,23 +30,15 @@ pub enum Heading {
 pub struct TurnDegrees(u32);
 
 impl TurnDegrees {
-    pub fn new(val: u32) -> Result<Self, WhisperAtcError> {
+    pub fn new(val: u32) -> Result<Self, Error> {
         let res = match val {
             0..180 => Self(val),
-            _ => return Err(WhisperAtcError::InvalidTurn(val)),
+            _ => return Err(Error::InvalidTurn(val)),
         };
         Ok(res)
     }
 
-    pub fn direction(&self) -> &u32 {
-        &self.0
-    }
-}
-
-impl Deref for TurnDegrees {
-    type Target = u32;
-
-    fn deref(&self) -> &Self::Target {
+    pub fn turn_degrees(&self) -> &u32 {
         &self.0
     }
 }
@@ -55,24 +47,16 @@ impl Deref for TurnDegrees {
 pub struct DirectionDegrees(u32);
 
 impl DirectionDegrees {
-    pub fn new(val: u32) -> Result<Self, WhisperAtcError> {
+    pub fn new(val: u32) -> Result<Self, Error> {
         let res = match val {
             1..360 => Self(val),
             360 => Self(0),
-            _ => return Err(WhisperAtcError::InvalidDirection(val)),
+            _ => return Err(Error::InvalidDirection(val)),
         };
         Ok(res)
     }
 
-    pub fn direction(&self) -> &u32 {
-        &self.0
-    }
-}
-
-impl Deref for DirectionDegrees {
-    type Target = u32;
-
-    fn deref(&self) -> &Self::Target {
+    pub fn direction_degrees(&self) -> &u32 {
         &self.0
     }
 }
@@ -84,35 +68,16 @@ pub enum ClimbOrDescend {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Feet(i32);
-
-impl Feet {
-    pub fn new(val: i32) -> Result<Self, WhisperAtcError> {
-        let res = match val {
-            -1355..100000 => Self(val),
-            _ => return Err(WhisperAtcError::InvalidAltitute(val)),
-        };
-        Ok(res)
-    }
-
-    pub fn altitude(&self) -> &i32 {
-        &self.0
-    }
-}
-
-impl Deref for Feet {
-    type Target = i32;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
+pub enum Altitude {
+    Feet(i32),
+    FlightLevel(u32),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FrequencyThousands(u32);
 
 impl FrequencyThousands {
-    pub fn new(val: u32) -> Result<Self, WhisperAtcError> {
+    pub fn new(val: u32) -> Result<Self, Error> {
         Ok(Self(val))
     }
 
@@ -136,7 +101,7 @@ pub enum AviationCommandPart {
     FlyHeading(Heading),
     ProceedDirect(String),
     ClimbOrDescend(ClimbOrDescend),
-    ChangeAltitude(Feet),
+    ChangeAltitude(Altitude),
     ContactFrequency {
         frequency: FrequencyThousands,
         station: Option<String>,
@@ -146,7 +111,9 @@ pub enum AviationCommandPart {
 #[derive(Debug, Clone)]
 pub enum CommunicationEntity {
     All,
-    GroundStation(String),
+    GroundStation {
+        full_name: String,
+    },
     Aircraft {
         full_name: String,
         airline: Option<String>,

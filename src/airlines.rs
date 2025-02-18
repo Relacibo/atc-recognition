@@ -1,11 +1,8 @@
 use std::{fs::File, io::BufReader, path::Path};
 
-use serde::{
-    Deserialize, Deserializer,
-    de::{self, Expected, Unexpected},
-};
+use serde::{Deserialize, Deserializer, de};
 
-use crate::errors::WhisperAtcError;
+use crate::errors::Error;
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct AirlineEntry {
@@ -24,7 +21,7 @@ pub struct AirlineEntry {
     pub active: bool,
 }
 
-pub fn load_airlines_from_file(path: &Path) -> Result<Vec<AirlineEntry>, WhisperAtcError> {
+pub fn load_airlines_from_file(path: &Path) -> Result<Vec<AirlineEntry>, Error> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
     let res = serde_json::from_reader(reader)?;

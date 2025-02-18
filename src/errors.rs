@@ -1,6 +1,7 @@
+use rubato::ResampleError;
 use thiserror::Error;
 #[derive(Error, Debug)]
-pub enum WhisperAtcError {
+pub enum Error {
     #[error("Invalid direction!")]
     InvalidDirection(u32),
     #[error("Invalid altitute!")]
@@ -11,4 +12,12 @@ pub enum WhisperAtcError {
     SerdeDeserialize(#[from] serde_json::Error),
     #[error("Std Io Error!")]
     StdIo(#[from] std::io::Error),
+    #[error("Did not find default input device!")]
+    FailedToFindDefaultInputDevice,
+    #[error("Cpal default stream config error!")]
+    CpalDefaultStreamConfig(#[from] cpal::DefaultStreamConfigError),
+    #[error("Cpal build stream error!")]
+    CpalBuildStreamError(#[from] cpal::BuildStreamError),
+    #[error("Rubatu resample error!")]
+    RubatuResample(#[from] ResampleError),
 }
